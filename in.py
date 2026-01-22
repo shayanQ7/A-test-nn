@@ -49,4 +49,28 @@ class bachgenrater:
         self.batch_size=batch_size
         self.num_batchs=math.ceil(len(images)/batch_size)
 
+        def next(self):
+            images=self.images[self.index:self.index+self.batch_size]
+            labels=self.labels[self.index:self.index+self.batch_size]   
+            self.index+=self.batch_size
+            return images,labels
         
+def one_traning_step(model,image_batch,labels_batch):
+    # doing forourd pass for in GradientTape
+    with tf.GradientTape() as tape:
+        prad=model(image_batch)
+        pre_sample_loss=tf.losses.SparseCategoricalCrossentropy(labels_batch,prad)
+        ave_loss=tf.reduce_mean(pre_sample_loss)
+
+        # computing Gradient using tape
+        grad=tape.gradient(ave_loss,model.weights)
+        # update the model weights
+        updete_weights(grad,model.weights)
+        return ave_loss
+
+learning_ratr=1e-3
+def updete_waights(grad,weights):
+    for g,W in zip(grad,weights):
+        W.assign_sub(g*learning_ratr)
+
+
